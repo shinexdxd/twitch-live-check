@@ -1,4 +1,3 @@
-// api/is-live.js
 const fetch = require('node-fetch');
 
 let cachedToken = null;
@@ -8,14 +7,12 @@ async function getAppToken() {
   const now = Date.now();
   if (cachedToken && now < tokenExpiresAt) return cachedToken;
 
-  // build form data
   const params = new URLSearchParams({
     client_id:     process.env.TWITCH_CLIENT_ID,
     client_secret: process.env.TWITCH_CLIENT_SECRET,
     grant_type:    'client_credentials'
   });
 
-  // POST instead of GET
   const resp = await fetch('https://id.twitch.tv/oauth2/token', {
     method:  'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -34,6 +31,16 @@ async function getAppToken() {
 }
 
 module.exports = async (req, res) => {
+  // 1) CORS headers
+  res.setHeader('Access-Control-Allow-Origin', 'https://shine.cool');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // 2) Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   try {
     const token    = await getAppToken();
     const username = process.env.TWITCH_USERNAME;
