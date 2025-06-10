@@ -31,12 +31,21 @@ async function getAppToken() {
 }
 
 module.exports = async (req, res) => {
-  // 1) CORS headers
-  res.setHeader('Access-Control-Allow-Origin', 'https://shine.cool');
+  // dynamic CORS
+  const allowedOrigins = [
+    'https://shine.cool',
+    'http://localhost:3000',  // react/vue/etc default
+    'http://localhost:8000',  // or whatever port you use
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // 2) Handle preflight
+  // short-circuit preflight
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
